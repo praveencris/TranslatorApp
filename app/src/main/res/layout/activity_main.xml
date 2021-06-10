@@ -6,6 +6,10 @@
     <data>
 
         <variable
+            name="language"
+            type="com.example.googletranslatordemo.models.Language" />
+
+        <variable
             name="input"
             type="com.example.googletranslatordemo.models.Input" />
 
@@ -76,6 +80,16 @@
             app:layout_constraintTop_toTopOf="@+id/guideline5" />
 
         <TextView
+            android:id="@+id/textView"
+            style="@style/label_text"
+            android:layout_marginTop="16dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="@string/select_to_language"
+            app:layout_constraintStart_toStartOf="@+id/guideline2"
+            app:layout_constraintTop_toBottomOf="@+id/inputEt" />
+
+        <TextView
             android:id="@+id/textView3"
             style="@style/label_text"
             android:layout_marginTop="16dp"
@@ -91,7 +105,7 @@
             android:background="@color/purple_700"
             app:layout_constraintEnd_toEndOf="@id/guideline3"
             app:layout_constraintStart_toStartOf="@id/guideline2"
-            app:layout_constraintTop_toBottomOf="@id/inputEt" />
+            app:layout_constraintTop_toBottomOf="@+id/spinner" />
 
         <Button
             android:id="@+id/translateBtn"
@@ -100,10 +114,20 @@
             android:layout_marginStart="16dp"
             android:layout_marginTop="32dp"
             android:layout_marginEnd="16dp"
-            android:onClick="@{()->viewModel.onTranslateClicked(input.input)}"
+            android:onClick="@{()->viewModel.onTranslateClicked(input.input,language.selectedItemPosition)}"
             android:text="@string/translate"
             app:layout_constraintEnd_toStartOf="@+id/guideline3"
             app:layout_constraintStart_toStartOf="@+id/guideline2"
             app:layout_constraintTop_toBottomOf="@+id/outputEt" />
+
+        <Spinner
+            android:id="@+id/spinner"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:entries="@array/languages"
+            android:padding="8dp"
+            android:selectedItemPosition="@={language.selectedItemPosition}"
+            app:layout_constraintStart_toStartOf="@+id/guideline2"
+            app:layout_constraintTop_toBottomOf="@+id/textView" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 </layout>

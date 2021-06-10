@@ -10,6 +10,7 @@ import androidx.lifecycle.ViewModelProvider;
 
 import com.example.googletranslatordemo.databinding.ActivityMainBinding;
 import com.example.googletranslatordemo.models.Input;
+import com.example.googletranslatordemo.models.Language;
 import com.example.googletranslatordemo.models.Result;
 import com.example.googletranslatordemo.models.TranslateResponse;
 
@@ -24,6 +25,7 @@ public class MainActivity extends AppCompatActivity {
         binding = DataBindingUtil.setContentView(this, R.layout.activity_main);
         mainViewModel = new ViewModelProvider(this).get(MainViewModel.class);
         binding.setInput(new Input());
+        binding.setLanguage(new Language());
         binding.setLifecycleOwner(this);
         binding.setViewModel(mainViewModel);
 

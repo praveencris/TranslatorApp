@@ -45,37 +45,65 @@ public class MainRepository {
         toGujarati = myApplication.toGujarati;
     }
 
-    public void performNetworkRequest(final String input,
+    public void performNetworkRequest(final String input, String languageCode,
                                       final RepositoryCallback<TranslateResponse> callback) {
         executors.execute(new Runnable() {
             @Override
             public void run() {
                 try {
-                    toHindiTranslator.translate(input)
-                            .addOnSuccessListener(
-                                    new OnSuccessListener<String>() {
-                                        @Override
-                                        public void onSuccess(String translatedText) {
-                                            Log.d("TAG", "Translated Text: " + translatedText);
-                                            notifyResult(new Result.Success<>(new TranslateResponse(translatedText, TranslateLanguage.HINDI)), callback);
-                                        }
-                                    })
-                            .addOnFailureListener(
-                                    new OnFailureListener() {
-                                        @Override
-                                        public void onFailure(@NonNull Exception e) {
-                                            // Error.
-                                            // ...
-                                            Log.d("TAG", "Translation Failed " + e.getMessage());
-                                            notifyResult(new Result.Error<>(new IOException("Translation failed for : " + input)), callback);
-                                        }
-                                    });
+                    translateInput(input, languageCode, callback);
                 } catch (Exception e) {
                     Result<TranslateResponse> errorResult = new Result.Error<>(e);
                     notifyResult(errorResult, callback);
                 }
             }
         });
+    }
+
+    private void translateInput(String input, String languageCode, RepositoryCallback<TranslateResponse> callback) {
+        Translator translator;
+        switch (languageCode) {
+            case TranslateLanguage.TAMIL:
+                translator = toTamilTranslator;
+                break;
+            case TranslateLanguage.TELUGU:
+                translator = toTeluguTranslator;
+                break;
+            case TranslateLanguage.BENGALI:
+                translator = toBengaliTranslator;
+                break;
+            case TranslateLanguage.MARATHI:
+                translator = toMarathiTranslator;
+                break;
+            case TranslateLanguage.KANNADA:
+                translator = toKannadaTranslator;
+                break;
+            case TranslateLanguage.GUJARATI:
+                translator = toGujarati;
+                break;
+            default:
+                translator = toHindiTranslator;
+                break;
+        }
+        translator.translate(input)
+                .addOnSuccessListener(
+                        new OnSuccessListener<String>() {
+                            @Override
+                            public void onSuccess(String translatedText) {
+                                Log.d("TAG", "Translated Text: " + translatedText);
+                                notifyResult(new Result.Success<>(new TranslateResponse(translatedText, languageCode)), callback);
+                            }
+                        })
+                .addOnFailureListener(
+                        new OnFailureListener() {
+                            @Override
+                            public void onFailure(@NonNull Exception e) {
+                                // Error.
+                                // ...
+                                Log.d("TAG", "Translation Failed " + e.getMessage());
+                                notifyResult(new Result.Error<>(new IOException("Translation failed for : " + input)), callback);
+                            }
+                        });
     }
 
 
@@ -97,6 +125,7 @@ public class MainRepository {
         }
         return url;
     }
+
     private static String readInputStream(InputStream inputStream) {
         StringBuilder output = new StringBuilder();
         InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
