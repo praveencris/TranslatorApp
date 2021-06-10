@@ -35,7 +35,6 @@ public class MainActivity extends AppCompatActivity {
                 if (result != null) {
                     if (result instanceof Result.Success) {
                         TranslateResponse translateResponse = ((Result.Success<TranslateResponse>) result).data;
-                        Log.d("TAG", translateResponse.toString());
                         binding.outputEt.setText(translateResponse.getOutput());
                     } else {
                         String errorMessage = ((Result.Error<TranslateResponse>) result).exception.getMessage();
