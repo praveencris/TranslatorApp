@@ -41,4 +41,7 @@ dependencies {
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.3.0'
 
     implementation 'com.google.mlkit:translate:16.1.2'
+
+    // Excel file reading api
+    implementation "net.sourceforge.jexcelapi:jxl:2.6.12"
 }
