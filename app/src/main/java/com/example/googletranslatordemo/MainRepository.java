@@ -6,20 +6,20 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.example.googletranslatordemo.database.AppDatabase;
+import com.example.googletranslatordemo.database.Language;
+import com.example.googletranslatordemo.database.LanguageDao;
 import com.example.googletranslatordemo.models.Result;
+import com.example.googletranslatordemo.models.Translate;
 import com.example.googletranslatordemo.models.TranslateResponse;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.mlkit.nl.translate.TranslateLanguage;
 import com.google.mlkit.nl.translate.Translator;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutorService;
 
 interface RepositoryCallback<T> {
@@ -32,6 +32,8 @@ public class MainRepository {
     Translator toHindiTranslator, toTamilTranslator, toTeluguTranslator,
             toBengaliTranslator, toMarathiTranslator, toKannadaTranslator, toGujarati;
 
+    private LanguageDao languageDao;
+
     public MainRepository(Application application) {
         MyApplication myApplication = (MyApplication) application;
         this.executors = myApplication.executorService;
@@ -43,10 +45,11 @@ public class MainRepository {
         toMarathiTranslator = myApplication.toMarathiTranslator;
         toKannadaTranslator = myApplication.toKannadaTranslator;
         toGujarati = myApplication.toGujarati;
+        languageDao = AppDatabase.getInstance(application).languageDao();
     }
 
-    public void performNetworkRequest(final String input, String languageCode,
-                                      final RepositoryCallback<TranslateResponse> callback) {
+    public void performTranslation(final String input, String languageCode,
+                                   final RepositoryCallback<TranslateResponse> callback) {
         executors.execute(new Runnable() {
             @Override
             public void run() {
@@ -116,30 +119,80 @@ public class MainRepository {
         });
     }
 
-    private static URL createUrl(String stringUrl) {
-        URL url = null;
-        try {
-            url = new URL(stringUrl);
-        } catch (MalformedURLException e) {
-            Log.e("TAG", "Error in creating url");
-        }
-        return url;
-    }
 
-    private static String readInputStream(InputStream inputStream) {
-        StringBuilder output = new StringBuilder();
-        InputStreamReader inputStreamReader = new InputStreamReader(inputStream, StandardCharsets.UTF_8);
-        BufferedReader bufferedReader = new BufferedReader(inputStreamReader);
-        try {
-            String line = bufferedReader.readLine();
-            while (line != null) {
-                output.append(line);
-                line = bufferedReader.readLine();
+    public void translateToAll(final List<Translate> translateInputs,
+                               final RepositoryCallback<List<Language>> callback) {
+        executors.execute(new Runnable() {
+            @Override
+            public void run() {
+                List<Language> languages = new ArrayList<>();
+                for (Translate input : translateInputs) {
+                    Language language = new Language();
+                    language.setId(input.getId());
+                    language.setEnglish(input.getEnglishText());
+                }
+                languageDao.insertAll(languages);
+                languages.clear();
+                executors.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (Translate input : translateInputs) {
+                            translate(input,TranslateLanguage.HINDI);
+                            translate(input,TranslateLanguage.TAMIL);
+                            translate(input,TranslateLanguage.TELUGU);
+                            translate(input,TranslateLanguage.BENGALI);
+                            translate(input,TranslateLanguage.MARATHI);
+                            translate(input,TranslateLanguage.KANNADA);
+                            translate(input,TranslateLanguage.GUJARATI);
+                        }
+                    }
+                });
             }
-        } catch (IOException e) {
-            Log.e("TAG", "Error occurred while reading input stream");
-        }
-        return output.toString();
+        });
     }
 
+    private void translate(Translate input,String languageCode) {
+        translateInput(input.getEnglishText(), languageCode, new RepositoryCallback<TranslateResponse>() {
+            @Override
+            public void onComplete(Result<TranslateResponse> result) {
+                executors.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        String output;
+                        if (result instanceof Result.Success) {
+                            TranslateResponse response = ((Result.Success<TranslateResponse>) result).data;
+                            output = response.getOutput();
+                        } else {
+                            String errorMessage = ((Result.Error<TranslateResponse>) result).exception.getMessage();
+                            output = "EEE - " + errorMessage;
+                        }
+                        switch (languageCode) {
+                            case TranslateLanguage.TAMIL:
+                                languageDao.updateTamil(input.getId(), output);
+                                break;
+                            case TranslateLanguage.TELUGU:
+                                languageDao.updateTelugu(input.getId(), output);
+
+                                break;
+                            case TranslateLanguage.BENGALI:
+                                languageDao.updateBengali(input.getId(), output);
+                                break;
+                            case TranslateLanguage.MARATHI:
+                                languageDao.updateMarathi(input.getId(), output);
+                                break;
+                            case TranslateLanguage.KANNADA:
+                                languageDao.updateKannada(input.getId(), output);
+                                break;
+                            case TranslateLanguage.GUJARATI:
+                                languageDao.updateGujarati(input.getId(), output);
+                                break;
+                            default:
+                                languageDao.updateHindi(input.getId(), output);
+                                break;
+                        }
+                    }
+                });
+            }
+        });
+    }
 }

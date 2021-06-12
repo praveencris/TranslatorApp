@@ -7,9 +7,13 @@ import androidx.lifecycle.AndroidViewModel;
 import androidx.lifecycle.LiveData;
 import androidx.lifecycle.MutableLiveData;
 
+import com.example.googletranslatordemo.database.Language;
 import com.example.googletranslatordemo.models.Result;
+import com.example.googletranslatordemo.models.Translate;
 import com.example.googletranslatordemo.models.TranslateResponse;
 import com.google.mlkit.nl.translate.TranslateLanguage;
+
+import java.util.List;
 
 public class MainViewModel extends AndroidViewModel {
     private final MainRepository repository;
@@ -23,7 +27,7 @@ public class MainViewModel extends AndroidViewModel {
     LiveData<Result<TranslateResponse>> translateResponse = _translateResponse;
 
     public void onTranslateClicked(String input, int selectedItemPosition) {
-        repository.performNetworkRequest(input, getLanguageCode(selectedItemPosition), new RepositoryCallback<TranslateResponse>() {
+        repository.performTranslation(input, getLanguageCode(selectedItemPosition), new RepositoryCallback<TranslateResponse>() {
             @Override
             public void onComplete(Result<TranslateResponse> result) {
                 _translateResponse.setValue(result);
@@ -51,5 +55,14 @@ public class MainViewModel extends AndroidViewModel {
                 return TranslateLanguage.GUJARATI;
         }
         return TranslateLanguage.HINDI;
+    }
+
+    public void translateAndSaveAll(List<Translate> translateList) {
+        repository.translateToAll(translateList, new RepositoryCallback<List<Language>>() {
+            @Override
+            public void onComplete(Result<List<Language>> result) {
+
+            }
+        });
     }
 }

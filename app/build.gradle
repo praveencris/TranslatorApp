@@ -44,4 +44,9 @@ dependencies {
 
     // Excel file reading api
     implementation "net.sourceforge.jexcelapi:jxl:2.6.12"
+
+    def room_version = "2.3.0"
+    implementation "androidx.room:room-runtime:$room_version"
+    annotationProcessor "androidx.room:room-compiler:$room_version"
+
 }

@@ -88,13 +88,14 @@ public class MainActivity extends AppCompatActivity {
                         cells[1].getContents(),
                         ""
                 ));
-                Log.d("TAG", cells[0].getContents() + " : "
-                        + cells[1].getContents());
+                /*Log.d("TAG", cells[0].getContents() + " : "
+                        + cells[1].getContents());*/
             }
         } catch (IOException | BiffException | IndexOutOfBoundsException e) {
             e.printStackTrace();
         }
-        createFile(Uri.parse("/csvfile/"));
+        mainViewModel.translateAndSaveAll(translateList);
+        //createFile(Uri.parse("/csvfile/"));
     }
 
 
